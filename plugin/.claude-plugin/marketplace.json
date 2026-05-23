@@ -1,0 +1,13 @@
+{
+  "name": "mindmesh-local",
+  "description": "MindMesh — Multi-provider AI consultation and code review orchestration",
+  "owner": {
+    "name": "MindMesh"
+  },
+  "plugins": [
+    {
+      "name": "mindmesh",
+      "source": "./"
+    }
+  ]
+}

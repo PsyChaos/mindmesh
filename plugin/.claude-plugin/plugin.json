@@ -1,0 +1,12 @@
+{
+  "name": "mindmesh",
+  "displayName": "MindMesh",
+  "description": "Multi-provider AI consultation and code review orchestration for Claude Code.",
+  "version": "0.1.0",
+  "mcpServers": {
+    "mindmesh": {
+      "command": "uv",
+      "args": ["run", "mindmesh-mcp"]
+    }
+  }
+}

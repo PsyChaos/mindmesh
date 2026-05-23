@@ -1,0 +1,98 @@
+project:
+  name: my-project
+  default_scope: git_diff
+
+providers:
+  openai:
+    api_key_env: OPENAI_API_KEY
+  gemini:
+    api_key_env: GEMINI_API_KEY
+  zai:
+    api_key_env: ZAI_API_KEY
+  ollama:
+    base_url: http://localhost:11434
+
+disabled: []
+
+endpoints:
+  openai-review:
+    provider: openai
+    model: gpt-5.1
+    timeout_seconds: 30
+  openai-security:
+    provider: openai
+    model: o3
+    timeout_seconds: 45
+  gemini-default:
+    provider: gemini
+    model: gemini-2.5-pro
+    timeout_seconds: 30
+  zai-default:
+    provider: zai
+    model: glm-4.6
+    timeout_seconds: 30
+  ollama-local:
+    provider: ollama
+    model: qwen2.5-coder
+    timeout_seconds: 60
+
+privacy:
+  redact_secrets: true
+  block_files:
+    - ".env"
+    - ".env.*"
+    - "*.pem"
+    - "*.key"
+    - "id_rsa"
+    - "id_ed25519"
+    - "secrets/**"
+    - "config/production.*"
+  block_dirs:
+    - "node_modules"
+    - "vendor"
+    - "dist"
+    - "build"
+    - ".git"
+    - ".next"
+    - "coverage"
+
+limits:
+  max_files: 50
+  max_file_size_kb: 120
+  max_total_context_kb: 1024
+  prefer_git_diff: true
+
+permissions:
+  allow_full_codebase_context: false
+  allow_external_patch: false
+  allow_auto_apply_patch: false
+  require_confirmation_for_large_context: true
+  require_confirmation_for_external_provider: false
+  allowed_test_commands:
+    - "uv run pytest"
+    - "npm test"
+    - "make test"
+
+sandbox:
+  enabled: true
+  image: python:3.12-slim
+  network: false
+  memory_limit: 512m
+  cpu_limit: 1.0
+
+prompts:
+  # custom_dir: ./my-prompts
+
+review:
+  default_endpoints:
+    - openai-review
+    - gemini-default
+  output_format: structured_findings
+
+compression:
+  enabled: false
+  # endpoint: gemini-default  # LLM summarizer endpoint (fallback: tree-sitter skeleton)
+
+cache:
+  enabled: false
+  ttl_seconds: 3600
