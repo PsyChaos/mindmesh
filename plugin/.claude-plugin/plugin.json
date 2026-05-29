@@ -5,8 +5,7 @@
   "version": "0.1.0",
   "mcpServers": {
     "mindmesh": {
-      "command": "uv",
-      "args": ["run", "mindmesh-mcp"]
+      "command": "mindmesh-mcp"
     }
   }
 }

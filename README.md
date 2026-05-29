@@ -70,28 +70,30 @@ Entry point: `mindmesh`
 ## Installation
 
 ```bash
-pip install mindmesh-ai[all]          # OpenAI + Gemini
-pip install mindmesh-ai[openai]       # OpenAI only
-pip install mindmesh-ai[gemini]       # Gemini only
-pip install mindmesh-ai               # Core only (Z.ai + Ollama via httpx)
-```
+# Recommended — global tool install (isolated env, CLI in PATH)
+uv tool install "mindmesh-ai[all]"    # OpenAI + Gemini
+uv tool install "mindmesh-ai[openai]" # OpenAI only
+uv tool install "mindmesh-ai[gemini]" # Gemini only
+uv tool install mindmesh-ai           # Core only (Z.ai + Ollama via httpx)
 
-Or with uv:
-
-```bash
-uv add "mindmesh-ai[all]"
+# Alternative — pip
+pip install "mindmesh-ai[all]"
 ```
 
 ## Quick Start
 
 **Requirements:** Python 3.12+, at least one API key
 
-**1. Set API keys:**
+**1. Set API keys** — in your project's `.env` file or shell profile:
 
 ```bash
+# Option A: .env file in project root (recommended)
+echo "OPENAI_API_KEY=sk-..." >> .env
+echo "GEMINI_API_KEY=AI..." >> .env
+
+# Option B: shell profile (~/.zshrc or ~/.bashrc) for all projects
 export OPENAI_API_KEY=sk-...
 export GEMINI_API_KEY=AI...
-# Or create a .env file in your project root
 ```
 
 **2. Use the CLI:**
@@ -102,56 +104,52 @@ mindmesh review --scope git_diff       # review your changes
 mindmesh ask "Is this safe?" --stream  # ask a provider
 ```
 
-**3. Connect to Claude Code** — add to `.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "mindmesh": {
-      "command": "mindmesh-mcp"
-    }
-  }
-}
-```
-
-Then talk to Claude naturally: *"Review this diff with OpenAI and Gemini"*
-
-## Plugin Setup
-
-MindMesh includes a Claude Code plugin with skills, agents, and hooks. After `pip install`, the plugin files are located at:
-
-```bash
-python -c "import sysconfig; print(sysconfig.get_path('data') + '/share/mindmesh/plugin')"
-```
-
-To use as a local plugin, add to your project's `.claude/settings.json`:
+**3. Connect to Claude Code** — add to your project's `.claude/settings.json`:
 
 ```json
 {
   "enabledPlugins": {"mindmesh@mindmesh-local": true},
   "extraKnownMarketplaces": {
     "mindmesh-local": {
-      "source": {"source": "directory", "path": "<plugin-path-from-above>"}
+      "source": {
+        "source": "directory",
+        "path": "<run: mindmesh plugin-path>"
+      }
     }
   }
 }
 ```
 
-**CLI** — run directly:
+Find the plugin path:
 
 ```bash
-uv run mindmesh review --scope git_diff
-uv run mindmesh security --scope staged
-uv run mindmesh ask "Explain this architecture" --endpoint gemini-default
-uv run mindmesh ask "What does this do?" --stream
-uv run mindmesh providers
-uv run mindmesh add-endpoint fast-review --provider openai --model gpt-4o-mini
-uv run mindmesh commit
-uv run mindmesh pr
-uv run mindmesh scan src/ --scanner bandit
-uv run mindmesh list --check
-uv run mindmesh history
-uv run mindmesh stats
+mindmesh plugin-path
+```
+
+Then talk to Claude naturally: *"Review this diff with OpenAI and Gemini"*
+
+**4. Update:**
+
+```bash
+mindmesh update
+```
+
+## CLI Examples
+
+```bash
+mindmesh review --scope git_diff
+mindmesh security --scope src/auth/
+mindmesh ask "Explain this architecture" --endpoint gemini-default
+mindmesh ask "What does this do?" --stream
+mindmesh providers
+mindmesh add-endpoint fast-review --provider openai --model gpt-4o-mini
+mindmesh commit
+mindmesh pr
+mindmesh scan src/ --scanner bandit
+mindmesh list --check
+mindmesh history
+mindmesh stats
+mindmesh plugin-path
 ```
 
 ## Usage Examples

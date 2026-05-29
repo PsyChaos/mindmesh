@@ -730,5 +730,52 @@ def remove_endpoint(
     typer.echo(f"Removed endpoint '{name}' from .mindmesh.yml")
 
 
+# ---------------------------------------------------------------------------
+# Setup commands
+# ---------------------------------------------------------------------------
+
+
+@app.command(name="plugin-path")
+def plugin_path() -> None:
+    """Show the installed plugin directory path."""
+    import sysconfig
+
+    candidates = [
+        Path.home() / ".local/share/uv/tools/mindmesh-ai/share/mindmesh/plugin",
+        Path(sysconfig.get_path("data")) / "share/mindmesh/plugin",
+    ]
+    for p in candidates:
+        if p.exists():
+            typer.echo(str(p))
+            return
+    typer.echo("Plugin not found. Reinstall with: uv tool install \"mindmesh-ai[all]\"", err=True)
+    raise typer.Exit(1)
+
+
+@app.command()
+def update() -> None:
+    """Update mindmesh-ai to the latest version."""
+    import subprocess
+    typer.echo("Updating mindmesh-ai...")
+    result = subprocess.run(
+        ["uv", "tool", "upgrade", "mindmesh-ai"],
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        typer.echo(result.stdout.strip() or "Updated successfully.")
+    else:
+        fallback = subprocess.run(
+            ["pip", "install", "--upgrade", "mindmesh-ai"],
+            capture_output=True, text=True,
+        )
+        if fallback.returncode == 0:
+            typer.echo(fallback.stdout.strip() or "Updated successfully.")
+        else:
+            typer.echo("Update failed. Try manually:", err=True)
+            typer.echo('  uv tool upgrade mindmesh-ai')
+            typer.echo('  pip install --upgrade mindmesh-ai')
+            raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()

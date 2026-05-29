@@ -36,9 +36,29 @@ DEFAULT_BLOCK_DIRS: list[str] = [
 
 
 
+def _validate_base_url(url: str) -> str:
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    host = parsed.hostname or ""
+    blocked = ("127.", "0.", "10.", "172.16.", "192.168.", "169.254.")
+    is_private = host == "localhost" or any(host.startswith(p) for p in blocked)
+    is_ollama_local = host in ("127.0.0.1", "localhost") and "11434" in url
+    if is_private and not is_ollama_local:
+            raise ValueError(
+                f"base_url '{url}' resolves to a private/internal address. "
+                "This is blocked to prevent SSRF."
+            )
+    return url
+
+
 class ProviderConfig(BaseModel):
     api_key_env: str | None = None
     base_url: str | None = None
+
+    def validated_base_url(self) -> str | None:
+        if self.base_url:
+            return _validate_base_url(self.base_url)
+        return None
 
 
 class EndpointConfig(BaseModel):
@@ -158,7 +178,11 @@ def _load_yaml(config_path: Path) -> dict[str, Any]:
 
 
 def load_config(path: Path | None = None) -> MindMeshConfig:
-    load_dotenv(override=False)
+    env_file = Path.cwd() / ".env"
+    if env_file.exists():
+        load_dotenv(str(env_file), override=False)
+    else:
+        load_dotenv(override=False)
 
     raw: dict[str, Any] = {}
 
@@ -171,16 +195,28 @@ def load_config(path: Path | None = None) -> MindMeshConfig:
 
     config = MindMeshConfig.model_validate(raw)
 
+    if raw and not config.sandbox.enabled:
+        import warnings
+        warnings.warn(
+            "Sandbox is disabled in project config. "
+            "Test commands will run directly on host.",
+            UserWarning,
+            stacklevel=2,
+        )
+
     if not config.providers and not config.endpoints:
         auto_providers, auto_endpoints = _build_auto_providers_and_endpoints()
         config.providers = auto_providers
         config.endpoints = auto_endpoints
 
     if not config.providers and not config.endpoints:
-        raise ValueError(
-            "No providers configured and no API keys found in environment. "
-            "Set at least one of: OPENAI_API_KEY, GEMINI_API_KEY, ZAI_API_KEY, "
-            "or configure providers in .mindmesh.yml"
+        import warnings
+        warnings.warn(
+            "No providers configured and no API keys found. "
+            "Set OPENAI_API_KEY, GEMINI_API_KEY, or ZAI_API_KEY, "
+            "or create .mindmesh.yml",
+            UserWarning,
+            stacklevel=2,
         )
 
     return config

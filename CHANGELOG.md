@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.2.1 (2026-05-30)
+
+### Security Fixes
+- Fail-closed sandbox: Docker unavailable → error instead of silent local fallback
+- Command whitelist: shlex-based exact token match, prevents prefix bypass
+- SSRF protection: private/internal IP blocking on custom base_url
+- Untrusted config warning when sandbox disabled
+
+### New
+- `mindmesh plugin-path` — show installed plugin directory
+- `mindmesh update` — upgrade to latest version
+- Server graceful startup: warns instead of crashing when no API keys configured
+- Local security scanners (bandit + semgrep) — zero API cost
+- Context compression (AST skeleton + LLM summarizer)
+- Smart commit/PR message generation
+- Real token tracking from provider responses
+- Optional dependencies: `pip install mindmesh-ai[openai]`, `[gemini]`, `[all]`
+
+### Fixed
+- Plugin.json: use `mindmesh-mcp` directly instead of `uv run`
+- Config: no-provider warning instead of crash for MCP server stability
+
 ## 0.1.0 (2026-05-27)
 
 Initial release.

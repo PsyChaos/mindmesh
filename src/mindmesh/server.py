@@ -1,5 +1,7 @@
 """MindMesh MCP server — FastMCP instance, tool registration, entry point."""
 
+from pathlib import Path as _Path
+
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
@@ -18,7 +20,8 @@ from mindmesh.tools import (
     validate,
 )
 
-load_dotenv()
+_env = _Path.cwd() / ".env"
+load_dotenv(_env if _env.exists() else None)
 
 _TOOL_MODULES = (
     review, security, bugfix, ask, compare, delegate,

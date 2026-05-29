@@ -28,7 +28,7 @@ class ZaiAdapter(ProviderAdapter):
         if provider_config.api_key_env:
             api_key = os.environ.get(provider_config.api_key_env, "")
 
-        base_url = provider_config.base_url or _DEFAULT_BASE_URL
+        base_url = provider_config.validated_base_url() or _DEFAULT_BASE_URL
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
 

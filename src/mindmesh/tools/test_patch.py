@@ -20,8 +20,12 @@ def init_tools(config: MindMeshConfig) -> None:
 def validate_command(
     test_command: str, allowed: list[str],
 ) -> str | None:
-    executable = test_command.split()[0] if test_command.split() else ""
-    if not executable:
+    import shlex
+    try:
+        parts = shlex.split(test_command)
+    except ValueError:
+        return f"Invalid command syntax: {test_command}"
+    if not parts:
         return "Empty test command."
 
     if not allowed:
@@ -32,11 +36,12 @@ def validate_command(
         )
 
     for pattern in allowed:
-        if executable == pattern or test_command.startswith(pattern):
+        pattern_parts = shlex.split(pattern)
+        if parts[: len(pattern_parts)] == pattern_parts:
             return None
 
     return (
-        f"Command '{executable}' is not in allowed_test_commands. "
+        f"Command '{parts[0]}' is not in allowed_test_commands. "
         f"Allowed: {allowed}"
     )
 

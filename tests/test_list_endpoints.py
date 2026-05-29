@@ -48,7 +48,10 @@ async def test_list_endpoints_ready_status(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 @pytest.mark.asyncio
-async def test_list_endpoints_no_api_key_status() -> None:
+async def test_list_endpoints_no_api_key_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     config = _config_with(
         providers={"openai": ProviderConfig(api_key_env="OPENAI_API_KEY")},
         endpoints={"ep-openai": EndpointConfig(provider="openai", model="gpt-4o")},

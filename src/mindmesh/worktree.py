@@ -86,8 +86,13 @@ class WorktreeManager:
     async def run_command(
         self, wt_path: Path, command: list[str], timeout: float = 120.0,
     ) -> tuple[int, str, bool]:
-        if self.sandbox.enabled and await self._docker_available():
-            return await self._run_in_docker(wt_path, command, timeout)
+        if self.sandbox.enabled:
+            if await self._docker_available():
+                return await self._run_in_docker(wt_path, command, timeout)
+            raise RuntimeError(
+                "Sandbox enabled but Docker is not available. "
+                "Install Docker or set sandbox.enabled=false in .mindmesh.yml"
+            )
         return *await self._run_local(wt_path, command, timeout), False
 
     async def _run_local(

@@ -95,18 +95,23 @@ def test_auto_endpoint_from_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert config.endpoints["openai-default"].model == "gpt-4o"
 
 
-def test_no_api_key_raises_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_no_api_key_warns(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("ZAI_API_KEY", raising=False)
-    # prevent any .env file higher in the tree from loading
     def _noop(**_: Any) -> bool:
         return False
     monkeypatch.setattr("mindmesh.config.load_dotenv", _noop)
 
-    with pytest.raises(ValueError, match="No providers configured"):
-        load_config()
+    import warnings
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        config = load_config()
+        assert len(w) == 1
+        assert "No providers configured" in str(w[0].message)
+    assert not config.providers
+    assert not config.endpoints
 
 
 def test_resolve_alias_chatgpt() -> None:
